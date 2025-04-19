@@ -1,10 +1,42 @@
 
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Train, User, Search } from 'lucide-react';
+import { Train, User, Search, LogIn, LogOut } from 'lucide-react';
+import { createClient } from '@supabase/supabase-js';
+import { toast } from 'sonner';
+
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL!, 
+  import.meta.env.VITE_SUPABASE_ANON_KEY!
+);
 
 const NavBar = () => {
+  const [user, setUser] = useState<any>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast.error('Logout failed');
+    } else {
+      toast.success('Logged out successfully');
+      navigate('/');
+    }
+  };
+
   return (
     <header className="bg-white border-b border-gray-200 shadow-sm">
       <div className="container mx-auto px-4 py-3">
@@ -27,10 +59,27 @@ const NavBar = () => {
           </nav>
           
           <div className="flex items-center space-x-4">
-            <Button variant="outline" className="hidden md:flex items-center gap-2">
-              <User size={18} />
-              <span>Login</span>
-            </Button>
+            {user ? (
+              <Button 
+                variant="outline" 
+                onClick={handleLogout} 
+                className="hidden md:flex items-center gap-2"
+              >
+                <LogOut size={18} />
+                <span>Logout</span>
+              </Button>
+            ) : (
+              <Button 
+                variant="outline" 
+                className="hidden md:flex items-center gap-2"
+                asChild
+              >
+                <Link to="/login">
+                  <LogIn size={18} />
+                  <span>Login</span>
+                </Link>
+              </Button>
+            )}
             <Button className="bg-irctc-blue hover:bg-irctc-blue-dark">Sign Up</Button>
           </div>
         </div>
