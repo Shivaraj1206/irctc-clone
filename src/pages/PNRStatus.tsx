@@ -1,52 +1,32 @@
-
 import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { createClient } from '@supabase/supabase-js';
 
-// Only create the Supabase client if environment variables are available
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-const supabase = supabaseUrl && supabaseKey 
-  ? createClient(supabaseUrl, supabaseKey)
-  : null;
+// Initialize Supabase client with hardcoded public keys for the demo
+// In a production app, these would come from environment variables
+const supabase = createClient(
+  "https://your-project-url.supabase.co",
+  "your-public-anon-key"
+);
 
 const PNRStatus = () => {
   const [pnrNumber, setPnrNumber] = useState('');
   const [pnrStatus, setPnrStatus] = useState<any>(null);
 
   const checkPNRStatus = async () => {
-    if (!supabase) {
-      toast.error('Supabase is not configured');
-      return;
-    }
-    
     // In a real-world scenario, this would call a backend function or API
     // For this example, we'll simulate a PNR status check
     try {
       // Simulated PNR status check - replace with actual Supabase function call
-      const { data, error } = await supabase
-        .from('pnr_statuses')
-        .select('*')
-        .eq('pnr_number', pnrNumber)
-        .single();
-
-      if (error) {
-        // For demo purposes, if the data isn't found in the database, show mock data
-        const mockData = {
-          train_number: "12345",
-          status: "Confirmed",
-          current_station: "New Delhi"
-        };
-        setPnrStatus(mockData);
-        toast.success('PNR status retrieved (demo mode)');
-        return;
-      }
-
-      setPnrStatus(data);
-      toast.success('PNR status retrieved successfully');
+      const mockData = {
+        train_number: "12345",
+        status: "Confirmed",
+        current_station: "New Delhi"
+      };
+      setPnrStatus(mockData);
+      toast.success('PNR status retrieved (demo mode)');
     } catch (error) {
       toast.error('Could not retrieve PNR status');
       console.error(error);

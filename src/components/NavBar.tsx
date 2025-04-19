@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -6,21 +5,18 @@ import { Train, User, Search, LogIn, LogOut } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import { toast } from 'sonner';
 
-// Only create the Supabase client if environment variables are available
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-const supabase = supabaseUrl && supabaseKey 
-  ? createClient(supabaseUrl, supabaseKey)
-  : null;
+// Initialize Supabase client with hardcoded public keys for the demo
+// In a production app, these would come from environment variables
+const supabase = createClient(
+  "https://your-project-url.supabase.co",
+  "your-public-anon-key"
+);
 
 const NavBar = () => {
   const [user, setUser] = useState<any>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!supabase) return;
-    
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setUser(session?.user ?? null);
@@ -35,17 +31,17 @@ const NavBar = () => {
   }, []);
 
   const handleLogout = async () => {
-    if (!supabase) {
-      toast.error('Supabase is not configured');
-      return;
-    }
-    
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast.error('Logout failed');
-    } else {
-      toast.success('Logged out successfully');
-      navigate('/');
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        toast.error('Logout failed');
+      } else {
+        toast.success('Logged out successfully');
+        navigate('/');
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast.error('An error occurred while logging out');
     }
   };
 
@@ -92,7 +88,9 @@ const NavBar = () => {
                 </Link>
               </Button>
             )}
-            <Button className="bg-irctc-blue hover:bg-irctc-blue-dark">Sign Up</Button>
+            <Button className="bg-irctc-blue hover:bg-irctc-blue-dark" asChild>
+              <Link to="/login?register=true">Sign Up</Link>
+            </Button>
           </div>
         </div>
       </div>
