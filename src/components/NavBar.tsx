@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Train, User } from 'lucide-react';
+import { Train, User, Search } from 'lucide-react';
 
 const NavBar = () => {
   return (
@@ -17,7 +17,12 @@ const NavBar = () => {
           <nav className="hidden md:flex items-center space-x-8">
             <Link to="/" className="text-gray-700 hover:text-irctc-blue font-medium">Home</Link>
             <Link to="/trains" className="text-gray-700 hover:text-irctc-blue font-medium">Trains</Link>
-            <Link to="/pnr" className="text-gray-700 hover:text-irctc-blue font-medium">PNR Status</Link>
+            <Button variant="outline" className="text-gray-700 hover:text-irctc-blue font-medium" asChild>
+              <Link to="/pnr">
+                <Search size={18} className="mr-2" />
+                PNR Status
+              </Link>
+            </Button>
             <Link to="/contact" className="text-gray-700 hover:text-irctc-blue font-medium">Contact</Link>
           </nav>
           
