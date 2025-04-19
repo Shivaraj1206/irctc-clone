@@ -6,16 +6,21 @@ import { Train, User, Search, LogIn, LogOut } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import { toast } from 'sonner';
 
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL!, 
-  import.meta.env.VITE_SUPABASE_ANON_KEY!
-);
+// Only create the Supabase client if environment variables are available
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+const supabase = supabaseUrl && supabaseKey 
+  ? createClient(supabaseUrl, supabaseKey)
+  : null;
 
 const NavBar = () => {
   const [user, setUser] = useState<any>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (!supabase) return;
+    
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setUser(session?.user ?? null);
@@ -23,11 +28,18 @@ const NavBar = () => {
     );
 
     return () => {
-      authListener.subscription.unsubscribe();
+      if (authListener?.subscription) {
+        authListener.subscription.unsubscribe();
+      }
     };
   }, []);
 
   const handleLogout = async () => {
+    if (!supabase) {
+      toast.error('Supabase is not configured');
+      return;
+    }
+    
     const { error } = await supabase.auth.signOut();
     if (error) {
       toast.error('Logout failed');

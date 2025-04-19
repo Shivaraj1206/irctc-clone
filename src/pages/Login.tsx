@@ -7,10 +7,13 @@ import { createClient } from '@supabase/supabase-js';
 import { toast } from 'sonner';
 import { User, Lock } from 'lucide-react';
 
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL!, 
-  import.meta.env.VITE_SUPABASE_ANON_KEY!
-);
+// Only create the Supabase client if environment variables are available
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+const supabase = supabaseUrl && supabaseKey 
+  ? createClient(supabaseUrl, supabaseKey)
+  : null;
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -19,6 +22,12 @@ const Login = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!supabase) {
+      toast.error('Supabase is not configured');
+      return;
+    }
+    
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password
