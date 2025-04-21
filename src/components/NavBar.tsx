@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -5,11 +6,11 @@ import { Train, User, Search, LogIn, LogOut } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import { toast } from 'sonner';
 
-// Initialize Supabase client with hardcoded public keys for the demo
-// In a production app, these would come from environment variables
+// Initialize Supabase client with fixed URL and key for the demo
+// These are public demo credentials that can be used for testing
 const supabase = createClient(
-  "https://your-project-url.supabase.co",
-  "your-public-anon-key"
+  "https://pefdnxvknbfrjexmrjgo.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlZmRueHZrbmJmcmpleG1yamdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDk1NjgwNjksImV4cCI6MjAyNTE0NDA2OX0.f06CzSHdlgTd2vwZ4MvUkZrZJJK2DyqPWN1_02xsCyE"
 );
 
 const NavBar = () => {
@@ -17,6 +18,15 @@ const NavBar = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Check current session on component mount
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      setUser(data.session?.user || null);
+    };
+    
+    checkSession();
+
+    // Set up auth state listener
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setUser(session?.user ?? null);
@@ -34,12 +44,12 @@ const NavBar = () => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) {
-        toast.error('Logout failed');
+        toast.error('Logout failed', { description: error.message });
       } else {
         toast.success('Logged out successfully');
         navigate('/');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Logout error:', error);
       toast.error('An error occurred while logging out');
     }
