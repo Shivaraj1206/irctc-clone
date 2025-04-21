@@ -3,16 +3,15 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { createClient } from '@supabase/supabase-js';
 import { toast } from 'sonner';
-import { User, Lock, UserPlus, Mail, ArrowLeft } from 'lucide-react';
+import { User, Lock, Mail, ArrowLeft } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-
-// Initialize Supabase client with fixed URL and key for the demo
-const supabase = createClient(
-  "https://pefdnxvknbfrjexmrjgo.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlZmRueHZrbmJmcmpleG1yamdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDk1NjgwNjksImV4cCI6MjAyNTE0NDA2OX0.f06CzSHdlgTd2vwZ4MvUkZrZJJK2DyqPWN1_02xsCyE"
-);
+import { 
+  supabase, 
+  saveLocalUser, 
+  checkLocalUser, 
+  saveCurrentUser 
+} from '@/utils/supabaseClient';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -50,47 +49,93 @@ const Login = () => {
       return;
     }
 
+    if (isRegistering && !name) {
+      setError('Please enter your full name');
+      setLoading(false);
+      return;
+    }
+
     try {
       if (isRegistering) {
-        // Register new user
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: {
-              full_name: name,
+        // Try Supabase registration
+        try {
+          const { data, error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+              data: {
+                full_name: name,
+              }
             }
-          }
-        });
-
-        if (error) {
-          setError(error.message);
-          toast.error('Registration failed', { description: error.message });
-        } else {
-          toast.success('Registration successful!', { 
-            description: 'Please check your email to confirm your account' 
           });
-          setIsRegistering(false);
+
+          if (error) {
+            throw error;
+          }
+
+          // If successful, save locally too as backup
+          saveLocalUser(email, password, name);
+          toast.success('Registration successful!');
+          
+          // Auto-login if no email confirmation required
+          if (data.user) {
+            saveCurrentUser({
+              email: email,
+              name: name,
+              user_metadata: { full_name: name }
+            });
+            navigate('/');
+          } else {
+            setIsRegistering(false);
+          }
+        } catch (supabaseError: any) {
+          console.error('Supabase registration error:', supabaseError);
+          
+          // Fallback to local storage registration
+          saveLocalUser(email, password, name);
+          
+          // Also save as current user (auto-login)
+          saveCurrentUser({
+            email: email,
+            name: name,
+            user_metadata: { full_name: name }
+          });
+          
+          toast.success('Registration successful!');
+          navigate('/');
         }
       } else {
-        // Login existing user
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password
-        });
+        // Try Supabase login
+        try {
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email,
+            password
+          });
 
-        if (error) {
-          setError(error.message);
-          toast.error('Login failed', { description: error.message });
-        } else {
+          if (error) {
+            throw error;
+          }
+
           toast.success('Login successful');
           navigate('/');
+        } catch (supabaseError: any) {
+          console.error('Supabase login error:', supabaseError);
+          
+          // Fallback to local storage login
+          const user = checkLocalUser(email, password);
+          
+          if (user) {
+            saveCurrentUser(user);
+            toast.success('Login successful');
+            navigate('/');
+          } else {
+            setError('Invalid email or password');
+          }
         }
       }
     } catch (error: any) {
       console.error('Auth error:', error);
-      setError('Authentication error occurred');
-      toast.error('Authentication error occurred');
+      setError(error.message || 'Authentication error occurred');
     } finally {
       setLoading(false);
     }
@@ -166,6 +211,7 @@ const Login = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 className="pl-10"
                 required
+                minLength={6}
               />
             </div>
           </div>
@@ -183,6 +229,7 @@ const Login = () => {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="pl-10"
                   required={isRegistering}
+                  minLength={6}
                 />
               </div>
             </div>

@@ -1,133 +1,212 @@
-
 import React, { useState } from 'react';
-import { Input } from '@/components/ui/input';
+import NavBar from '@/components/NavBar';
+import { supabase, getCurrentUser } from '@/utils/supabaseClient';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Search, Train, Calendar, Clock, MapPin, User } from 'lucide-react';
 import { toast } from 'sonner';
-import { createClient } from '@supabase/supabase-js';
-import { Search, Train } from 'lucide-react';
-
-// Initialize Supabase client with fixed URL and key for the demo
-const supabase = createClient(
-  "https://pefdnxvknbfrjexmrjgo.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlZmRueHZrbmJmcmpleG1yamdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDk1NjgwNjksImV4cCI6MjAyNTE0NDA2OX0.f06CzSHdlgTd2vwZ4MvUkZrZJJK2DyqPWN1_02xsCyE"
-);
 
 const PNRStatus = () => {
   const [pnrNumber, setPnrNumber] = useState('');
-  const [pnrStatus, setPnrStatus] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [pnrData, setPnrData] = useState<any>(null);
 
-  const checkPNRStatus = async () => {
-    if (!pnrNumber || pnrNumber.length < 6) {
-      toast.error('Please enter a valid PNR number');
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!pnrNumber || pnrNumber.length !== 10) {
+      toast.error('Please enter a valid 10-digit PNR number');
       return;
     }
     
     setLoading(true);
     
     try {
-      // In a real-world scenario, this would call a Supabase function
-      // For this demo, we'll simulate a PNR status check with mock data
-      const mockData = {
-        pnr: pnrNumber,
-        train_number: "12345",
-        train_name: "Rajdhani Express",
-        date_of_journey: "23-Apr-2023",
-        status: "Confirmed",
-        current_station: "New Delhi",
-        passenger_details: [
-          { seat_number: "A1-23", status: "Confirmed" },
-          { seat_number: "A1-24", status: "Confirmed" }
-        ]
-      };
-      
-      // Simulate network delay
+      // Simulate API call with a timeout
       setTimeout(() => {
-        setPnrStatus(mockData);
-        toast.success('PNR status retrieved successfully');
+        // Mock data for demo purposes
+        const mockData = {
+          pnrNumber,
+          trainNumber: '12345',
+          trainName: 'Rajdhani Express',
+          dateOfJourney: '2023-06-15',
+          from: 'New Delhi',
+          to: 'Mumbai Central',
+          boardingPoint: 'New Delhi',
+          reservationUpTo: 'Mumbai Central',
+          class: '3A',
+          passengers: [
+            { 
+              number: 1, 
+              status: 'Confirmed', 
+              coach: 'B2', 
+              berth: '23', 
+              berthType: 'Side Lower' 
+            },
+            { 
+              number: 2, 
+              status: 'Confirmed', 
+              coach: 'B2', 
+              berth: '24', 
+              berthType: 'Side Upper' 
+            }
+          ],
+          chartStatus: 'Chart Prepared'
+        };
+        
+        setPnrData(mockData);
         setLoading(false);
-      }, 1000);
-      
+        toast.success('PNR details fetched successfully');
+      }, 1500);
     } catch (error) {
-      toast.error('Could not retrieve PNR status');
-      console.error(error);
+      console.error('Error fetching PNR details:', error);
+      toast.error('Failed to fetch PNR details');
       setLoading(false);
     }
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6 text-irctc-blue flex items-center">
-        <Train className="mr-2" size={32} />
-        PNR Status
-      </h1>
+    <div className="min-h-screen bg-gray-50">
+      <NavBar />
       
-      <div className="max-w-md mx-auto space-y-4">
-        <div className="bg-white shadow-md rounded-lg p-6">
-          <div className="space-y-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-              <Input 
-                type="text" 
-                placeholder="Enter 10-digit PNR Number" 
-                value={pnrNumber}
-                onChange={(e) => setPnrNumber(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Button 
-              onClick={checkPNRStatus} 
-              className="w-full bg-irctc-blue hover:bg-irctc-blue-dark"
-              disabled={loading}
-            >
-              {loading ? 'Checking...' : 'Check Status'}
-            </Button>
-          </div>
-        </div>
-
-        {pnrStatus && (
-          <div className="bg-white shadow-md rounded-lg p-6">
-            <h2 className="text-xl font-semibold mb-4 text-irctc-blue">PNR Details</h2>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <p className="text-sm text-gray-500">PNR Number</p>
-                  <p className="font-medium">{pnrStatus.pnr}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Train Number</p>
-                  <p className="font-medium">{pnrStatus.train_number}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Train Name</p>
-                  <p className="font-medium">{pnrStatus.train_name}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Date of Journey</p>
-                  <p className="font-medium">{pnrStatus.date_of_journey}</p>
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-3xl mx-auto">
+          <h1 className="text-2xl font-bold text-gray-800 mb-6">PNR Status Enquiry</h1>
+          
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1">
+                <label htmlFor="pnr" className="block text-sm font-medium text-gray-700 mb-1">
+                  Enter PNR Number
+                </label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                  <Input
+                    id="pnr"
+                    type="text"
+                    placeholder="10-digit PNR Number"
+                    value={pnrNumber}
+                    onChange={(e) => setPnrNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                    className="pl-10"
+                    maxLength={10}
+                    pattern="[0-9]{10}"
+                  />
                 </div>
               </div>
-              
-              <div className="border-t pt-4">
-                <p className="text-sm text-gray-500 mb-2">Passenger Status</p>
-                <div className="space-y-2">
-                  {pnrStatus.passenger_details.map((passenger: any, index: number) => (
-                    <div key={index} className="flex justify-between bg-gray-50 p-2 rounded">
-                      <span>Passenger {index + 1}</span>
-                      <span className="font-medium">{passenger.seat_number}</span>
-                      <span className="text-green-600 font-medium">{passenger.status}</span>
+              <div className="self-end">
+                <Button 
+                  type="submit" 
+                  className="bg-irctc-blue hover:bg-irctc-blue-dark w-full md:w-auto"
+                  disabled={loading}
+                >
+                  {loading ? 'Checking...' : 'Get Status'}
+                </Button>
+              </div>
+            </form>
+          </div>
+          
+          {pnrData && (
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <div className="border-b pb-4 mb-4">
+                <h2 className="text-xl font-semibold text-gray-800 mb-4">PNR: {pnrData.pnrNumber}</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-start gap-3">
+                    <Train className="text-irctc-blue mt-1" size={20} />
+                    <div>
+                      <p className="text-sm text-gray-500">Train Number/Name</p>
+                      <p className="font-medium">{pnrData.trainNumber} - {pnrData.trainName}</p>
                     </div>
-                  ))}
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <Calendar className="text-irctc-blue mt-1" size={20} />
+                    <div>
+                      <p className="text-sm text-gray-500">Date of Journey</p>
+                      <p className="font-medium">{pnrData.dateOfJourney}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <MapPin className="text-irctc-blue mt-1" size={20} />
+                    <div>
+                      <p className="text-sm text-gray-500">From - To</p>
+                      <p className="font-medium">{pnrData.from} - {pnrData.to}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <Clock className="text-irctc-blue mt-1" size={20} />
+                    <div>
+                      <p className="text-sm text-gray-500">Class</p>
+                      <p className="font-medium">{pnrData.class}</p>
+                    </div>
+                  </div>
                 </div>
               </div>
               
-              <div className="border-t pt-4">
-                <p className="text-sm text-gray-500">Current Station</p>
-                <p className="font-medium">{pnrStatus.current_station}</p>
+              <h3 className="text-lg font-medium mb-3">Passenger Details</h3>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        No.
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Booking Status
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Current Status
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Coach
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Berth
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {pnrData.passengers.map((passenger: any) => (
+                      <tr key={passenger.number}>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {passenger.number}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                          {passenger.status}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                            {passenger.status}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                          {passenger.coach}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                          {passenger.berth} ({passenger.berthType})
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              
+              <div className="mt-6 pt-4 border-t">
+                <p className="text-sm text-gray-600">
+                  <span className="font-medium">Chart Status:</span> {pnrData.chartStatus}
+                </p>
               </div>
             </div>
-          </div>
-        )}
+          )}
+          
+          {!pnrData && !loading && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
+              <User className="mx-auto text-blue-500 mb-2" size={32} />
+              <h3 className="text-lg font-medium text-gray-800 mb-1">No PNR Details</h3>
+              <p className="text-gray-600">
+                Enter your 10-digit PNR number and click "Get Status" to check your reservation status.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
