@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,9 +27,7 @@ export const SearchBox = () => {
           <div className="md:col-span-1">
             <label htmlFor="from-station" className="block text-sm font-medium text-gray-700 mb-1">From</label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <MapPin className="h-4 w-4 text-gray-500" />
-              </div>
+              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" />
               <Input 
                 id="from-station"
                 className="pl-10"
@@ -45,9 +42,7 @@ export const SearchBox = () => {
           <div className="md:col-span-1">
             <label htmlFor="to-station" className="block text-sm font-medium text-gray-700 mb-1">To</label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <MapPin className="h-4 w-4 text-gray-500" />
-              </div>
+              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" />
               <Input 
                 id="to-station"
                 className="pl-10"
