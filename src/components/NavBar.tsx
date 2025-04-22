@@ -78,7 +78,10 @@ const NavBar = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Train className="h-6 w-6 text-irctc-blue" />
-            <Link to="/" className="text-xl font-bold text-irctc-blue">IRCTC</Link>
+            <div>
+              <Link to="/" className="text-xl font-bold text-irctc-blue">IRCTC</Link>
+              <div className="text-xs text-gray-500">Developed by Shivaraj Chinthakindi</div>
+            </div>
           </div>
           
           <nav className="hidden md:flex items-center space-x-8">

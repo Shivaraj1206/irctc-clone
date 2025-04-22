@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Train, Phone, Mail, MapPin } from 'lucide-react';
+import { Train, Phone, Mail, MapPin, Code, User } from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -55,25 +55,41 @@ const Footer = () => {
           </div>
           
           <div>
-            <h3 className="text-lg font-semibold mb-4">Newsletter</h3>
-            <p className="text-gray-300 mb-4">
-              Subscribe to our newsletter for the latest updates and offers.
-            </p>
-            <div className="flex">
-              <input
-                type="email"
-                placeholder="Your email"
-                className="px-4 py-2 w-full text-gray-800 border-none focus:outline-none rounded-l-md"
-              />
-              <button className="bg-irctc-orange hover:bg-irctc-orange/90 px-4 py-2 rounded-r-md transition-colors">
-                Submit
-              </button>
+            <h3 className="text-lg font-semibold mb-4">About Developer</h3>
+            <div className="bg-irctc-blue bg-opacity-30 p-4 rounded-lg">
+              <div className="flex items-center space-x-3 mb-3">
+                <User className="h-6 w-6 text-irctc-orange" />
+                <span className="font-semibold">Shivaraj Chinthakindi</span>
+              </div>
+              <p className="text-sm text-gray-300 mb-2">
+                Student at [Your University Name]
+              </p>
+              <div className="flex items-center space-x-2 text-sm text-gray-300">
+                <Code className="h-4 w-4 text-irctc-orange" />
+                <span>Full Stack Developer</span>
+              </div>
+            </div>
+            
+            <div className="mt-4">
+              <p className="text-gray-300 mb-2">
+                Subscribe to our newsletter:
+              </p>
+              <div className="flex">
+                <input
+                  type="email"
+                  placeholder="Your email"
+                  className="px-4 py-2 w-full text-gray-800 border-none focus:outline-none rounded-l-md"
+                />
+                <button className="bg-irctc-orange hover:bg-irctc-orange/90 px-4 py-2 rounded-r-md transition-colors">
+                  Submit
+                </button>
+              </div>
             </div>
           </div>
         </div>
         
         <div className="border-t border-white/10 mt-10 pt-6 text-center">
-          <p className="text-gray-300">© {new Date().getFullYear()} IRCTC Clone. All rights reserved.</p>
+          <p className="text-gray-300">© {new Date().getFullYear()} IRCTC Clone by Shivaraj Chinthakindi. All rights reserved.</p>
         </div>
       </div>
     </footer>

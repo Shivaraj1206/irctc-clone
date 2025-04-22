@@ -27,11 +27,13 @@ export const SearchBox = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="md:col-span-1">
             <label htmlFor="from-station" className="block text-sm font-medium text-gray-700 mb-1">From</label>
-            <div className="input-group">
-              <MapPin className="input-group-icon h-4 w-4" />
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                <MapPin className="h-4 w-4 text-gray-500" />
+              </div>
               <Input 
                 id="from-station"
-                className="input-with-icon"
+                className="pl-10"
                 placeholder="From Station"
                 value={fromStation}
                 onChange={(e) => setFromStation(e.target.value)}
@@ -42,11 +44,13 @@ export const SearchBox = () => {
           
           <div className="md:col-span-1">
             <label htmlFor="to-station" className="block text-sm font-medium text-gray-700 mb-1">To</label>
-            <div className="input-group">
-              <MapPin className="input-group-icon h-4 w-4" />
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                <MapPin className="h-4 w-4 text-gray-500" />
+              </div>
               <Input 
                 id="to-station"
-                className="input-with-icon"
+                className="pl-10"
                 placeholder="To Station"
                 value={toStation}
                 onChange={(e) => setToStation(e.target.value)}
