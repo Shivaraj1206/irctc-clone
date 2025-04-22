@@ -1,3 +1,5 @@
+
+// Developed by Shivaraj Chinthakindi - Masters Project
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,7 +32,7 @@ export const SearchBox = () => {
               <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" />
               <Input 
                 id="from-station"
-                className="pl-10"
+                className="pl-10 text-gray-900" 
                 placeholder="From Station"
                 value={fromStation}
                 onChange={(e) => setFromStation(e.target.value)}
@@ -45,7 +47,7 @@ export const SearchBox = () => {
               <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" />
               <Input 
                 id="to-station"
-                className="pl-10"
+                className="pl-10 text-gray-900"
                 placeholder="To Station"
                 value={toStation}
                 onChange={(e) => setToStation(e.target.value)}
@@ -90,3 +92,4 @@ export const SearchBox = () => {
     </div>
   );
 };
+
