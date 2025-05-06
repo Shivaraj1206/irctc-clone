@@ -4,6 +4,7 @@ import NavBar from '@/components/NavBar';
 import HeroSection from '@/components/HeroSection';
 import ServiceFeatures from '@/components/ServiceFeatures';
 import FeaturedDestinations from '@/components/FeaturedDestinations';
+import AIRecommendation from '@/components/AIRecommendation';
 import Footer from '@/components/Footer';
 
 const Index = () => {
@@ -13,6 +14,7 @@ const Index = () => {
       <main className="flex-grow">
         <HeroSection />
         <ServiceFeatures />
+        <AIRecommendation />
         <FeaturedDestinations />
       </main>
       <Footer />
