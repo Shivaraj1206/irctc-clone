@@ -4,8 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { Loader2, Sparkles } from 'lucide-react';
+import { Loader2, Sparkles, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 interface RecommendationResult {
   trainRoutes: {
@@ -17,14 +18,41 @@ interface RecommendationResult {
   explanation: string;
 }
 
+const FALLBACK_RECOMMENDATIONS: RecommendationResult = {
+  trainRoutes: [
+    {
+      from: "Bengaluru",
+      to: "Ooty",
+      trainName: "Nilgiri Mountain Railway (Train No. 56136)",
+      description: "This UNESCO World Heritage train offers breathtaking mountain views through the Western Ghats. Perfect for scenic photography in July with lush green landscapes after monsoon."
+    },
+    {
+      from: "Chennai",
+      to: "Pondicherry",
+      trainName: "Chennai Puducherry Express (Train No. 16117)",
+      description: "Combining coastal beauty with French colonial architecture in Pondicherry. July offers pleasant weather for exploring cultural sites and beaches."
+    },
+    {
+      from: "Kochi",
+      to: "Munnar",
+      trainName: "Ernakulam-Madurai Express (Train No. 16731) + connecting taxi",
+      description: "Experience Kerala's lush tea plantations and mountain vistas. The train journey followed by a scenic road trip provides diverse landscapes and cultural experiences."
+    }
+  ],
+  explanation: "These routes offer the best combination of mountain scenery and cultural experiences in South India during July. The Nilgiri Railway is especially recommended for mountain enthusiasts, while the other routes balance natural beauty with historical sites."
+};
+
 const AIRecommendation = () => {
   const [prompt, setPrompt] = useState('');
   const [apiKey, setApiKey] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<RecommendationResult | null>(null);
+  const [showFallback, setShowFallback] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage(null);
     
     if (!prompt.trim()) {
       toast.error('Please enter your travel preferences');
@@ -75,7 +103,8 @@ const AIRecommendation = () => {
       });
       
       if (!response.ok) {
-        throw new Error(`API request failed with status ${response.status}`);
+        const errorData = await response.json();
+        throw new Error(`API request failed with status ${response.status}: ${errorData.error?.message || 'Unknown error'}`);
       }
       
       const data = await response.json();
@@ -84,18 +113,39 @@ const AIRecommendation = () => {
         const content = data.choices[0].message.content;
         const parsedContent = JSON.parse(content);
         setResult(parsedContent);
+        setShowFallback(false);
         toast.success('AI recommendations generated successfully!');
       } catch (parseError) {
         console.error('Error parsing AI response:', parseError);
         toast.error('Failed to parse AI response');
+        throw new Error('Failed to parse AI response');
       }
       
     } catch (error) {
       console.error('Error fetching AI recommendations:', error);
-      toast.error('Failed to generate recommendations. Please check your API key and try again.');
+      setErrorMessage(error instanceof Error ? error.message : 'Failed to generate recommendations');
+      
+      // Check if it's a rate limit or quota error
+      if (error instanceof Error && 
+          (error.message.includes('429') || 
+           error.message.includes('quota') || 
+           error.message.includes('rate limit'))) {
+        
+        setShowFallback(true);
+        setResult(FALLBACK_RECOMMENDATIONS);
+        toast.info('Using demo recommendations due to API limits');
+      } else {
+        toast.error('Failed to generate recommendations. Please check your API key and try again.');
+      }
     } finally {
       setLoading(false);
     }
+  };
+
+  const useFallbackDemo = () => {
+    setResult(FALLBACK_RECOMMENDATIONS);
+    setShowFallback(true);
+    toast.info('Using demo recommendations');
   };
 
   return (
@@ -116,6 +166,14 @@ const AIRecommendation = () => {
           </CardHeader>
           
           <CardContent>
+            {errorMessage && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>API Error</AlertTitle>
+                <AlertDescription>{errorMessage}</AlertDescription>
+              </Alert>
+            )}
+            
             <form onSubmit={handleSubmit}>
               <div className="space-y-4">
                 <div>
@@ -142,9 +200,19 @@ const AIRecommendation = () => {
                     value={apiKey}
                     onChange={(e) => setApiKey(e.target.value)}
                   />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Your API key is only used for this request and not stored.
-                  </p>
+                  <div className="flex justify-between items-center">
+                    <p className="text-xs text-gray-500 mt-1">
+                      Your API key is only used for this request and not stored.
+                    </p>
+                    <Button 
+                      type="button" 
+                      variant="link" 
+                      className="text-xs p-0 h-auto"
+                      onClick={useFallbackDemo}
+                    >
+                      Use demo without API key
+                    </Button>
+                  </div>
                 </div>
               </div>
               
@@ -168,7 +236,14 @@ const AIRecommendation = () => {
           {result && (
             <CardFooter className="flex flex-col">
               <div className="border-t w-full pt-4">
-                <h3 className="font-medium text-lg mb-2">Recommended Train Routes</h3>
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="font-medium text-lg">Recommended Train Routes</h3>
+                  {showFallback && (
+                    <span className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded-full">
+                      Demo Data
+                    </span>
+                  )}
+                </div>
                 <p className="text-sm text-gray-600 mb-4">{result.explanation}</p>
                 
                 <div className="space-y-4">
@@ -176,7 +251,7 @@ const AIRecommendation = () => {
                     <div key={index} className="border rounded-lg p-4">
                       <div className="flex justify-between mb-2">
                         <span className="font-medium">{route.from} to {route.to}</span>
-                        <span className="text-irctc-blue">{route.trainName}</span>
+                        <span className="text-blue-600">{route.trainName}</span>
                       </div>
                       <p className="text-sm text-gray-600">{route.description}</p>
                     </div>
